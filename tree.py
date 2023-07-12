@@ -1,15 +1,19 @@
 class PhoneTreeHandler:
     # an interface to be implemented by each concrete handler
     
+    # the next handler in the chain
     _next = None
-
-    def set_next_handler(self, next_handler):
-        self._next = next_handler
 
     def dial(self, extention: int):
         pass
 
-# Now, we implement each of the concrete handlers for the chain
+    def set_next_handler(self, next_handler):
+        self._next = next_handler
+        
+        # returning the next handler allows for daisy chaining
+        return self._next
+
+# Now, we implement each of the concrete handlers we need for the chain
 class PressedOneHandler(PhoneTreeHandler):
     def dial(self, extension: int):
         if (extension == 1):
@@ -52,24 +56,20 @@ class PhoneTree:
 
     def __init__(self):
         # initialize all of the concrete handlers
-        one_handler = PressedOneHandler()
-        two_handler = PressedTwoHandler()
-        three_handler = PressedThreeHandler()
-        four_handler = PressedFourHandler()
-        other_handler = ElseHandler()
+        one = PressedOneHandler()
+        two = PressedTwoHandler()
+        three = PressedThreeHandler()
+        four = PressedFourHandler()
+        other = ElseHandler()
         
         # create the links (building the chain)
-        one_handler.set_next_handler(two_handler)
-        two_handler.set_next_handler(three_handler)
-        three_handler.set_next_handler(four_handler)
-        four_handler.set_next_handler(other_handler)
-        
-        self.responsibility_chain = PressedOneHandler()
+        one.set_next_handler(two).set_next_handler(three).set_next_handler(four).set_next_handler(other)
+        self.responsibility_chain = one
 
 ### DEMONSTRATION CODE ###
 
 def print_tree_menu():
-    print("Thank you for call RPI Ambulance.")
+    print("Thank you for calling RPI Ambulance.")
     print("To be connected to an on-duty supervisor, press 1.")
     print("To be connected to the Captain, press 2.")
     print("To be connected to the First Lieutenant, press 3.")
@@ -83,4 +83,4 @@ if __name__ == "__main__":
     
     ext = input("Dial: ")
     if (ext.isnumeric()):
-        tree.chain.dial(int(ext))
+        tree.responsibility_chain.dial(int(ext))
